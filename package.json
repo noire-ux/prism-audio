@@ -1,0 +1,7 @@
+{
+  "name": "noctprism-audio-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Audio Studio: Music Control (speed/pitch/trim) + Uploader ke Roblox (Asset ID)",
+  "engines": { "node": ">=18" }
+}
