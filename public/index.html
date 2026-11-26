@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a14">
+<title>NoctPrism Audio Studio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎧</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button id="burger" class="burger" aria-label="Buka menu" aria-expanded="false" aria-controls="sidebar"><span></span><span></span><span></span></button>
+  <div class="brand"><span class="logo">N</span><div><b>NOCTPRISM</b><small>AUDIO STUDIO</small></div></div>
+  <div class="topbar-title" id="viewTitle">HOME</div>
+</header>
+
+<div id="overlay" class="overlay"></div>
+<aside id="sidebar" class="sidebar" aria-label="Menu utama">
+  <div class="side-head"><span class="logo">N</span><div><b>NOCTPRISM</b><small>AUDIO STUDIO</small></div></div>
+  <nav>
+    <a href="#home" data-view="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>HOME</a>
+    <a href="#downloader" data-view="downloader"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>DOWNLOADER</a>
+    <a href="#music" data-view="music"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>MUSIC CONTROL</a>
+    <a href="#uploader" data-view="uploader"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16"/></svg>UPLOADER</a>
+  </nav>
+  <div class="side-foot">Semua pemrosesan audio berjalan di browser kamu.</div>
+</aside>
+
+<main>
+
+<!-- ============ HOME ============ -->
+<section id="view-home" class="view">
+  <div class="hero">
+    <h1>Siapkan lagu untuk <span class="grad">Roblox</span>,<br>dari file ke Asset ID.</h1>
+    <p>Atur speed &amp; pitch lagu yang terlalu cepat, potong, normalisasi, lalu upload langsung ke Roblox dan dapatkan <b>Asset ID</b>-nya.</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="#music">Buka Music Control</a>
+      <a class="btn" href="#uploader">Ke Uploader</a>
+    </div>
+  </div>
+
+  <div class="grid">
+    <a class="card link" href="#downloader"><h3>DOWNLOADER</h3><p>Ambil file audio dari link langsung (milik sendiri / bebas royalti).</p></a>
+    <a class="card link" href="#music"><h3>MUSIC CONTROL</h3><p>Ubah speed, pitch, volume, fade, trim. Ekspor MP3 / WAV.</p></a>
+    <a class="card link" href="#uploader"><h3>UPLOADER</h3><p>Upload ke Roblox via Open Cloud → Asset ID siap pakai.</p></a>
+  </div>
+
+  <div class="card">
+    <h3>Alur cepat</h3>
+    <ol class="steps">
+      <li><b>Siapkan file</b> – drop file lagu (MP3/WAV/OGG/M4A) di Music Control, atau ambil dari Downloader.</li>
+      <li><b>Atur</b> – kalau lagu terlalu cepat, turunkan <i>Speed</i> (mis. 0.85×) dengan <i>Pertahankan pitch</i> aktif.</li>
+      <li><b>Proses &amp; dengarkan</b> – tekan <i>Proses</i>, cek hasilnya di player.</li>
+      <li><b>Kirim ke Uploader</b> – file otomatis dijadikan MP3 ≤ 4 MB, lalu upload dan salin Asset ID.</li>
+    </ol>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <h3>Tips lagu terlalu cepat</h3>
+      <ul>
+        <li>Speed 0.80–0.95× biasanya cukup. Aktifkan <i>Pertahankan pitch</i> agar suara tidak jadi berat.</li>
+        <li>Di Roblox kamu juga bisa memakai <code>Sound.PlaybackSpeed</code>, tapi memperbaiki file langsung membuat semua pemain mendengar versi yang sama.</li>
+        <li>Pakai bitrate 128 kbps agar lagu 4 menit tetap di bawah batas upload.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Informasi penting</h3>
+      <ul>
+        <li>Upload hanya untuk audio yang <b>kamu miliki haknya</b> atau berlisensi. Roblox memoderasi audio berhak cipta.</li>
+        <li>Roblox mewajibkan akun terverifikasi untuk upload audio dan API key Open Cloud dengan izin <i>Assets</i>.</li>
+        <li>YouTube / Spotify tidak didukung (melanggar syarat layanan &amp; hak cipta).</li>
+        <li>Batas ukuran upload lewat Vercel ≈ 4.4 MB.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Sumber musik legal</h3>
+    <div class="chips">
+      <a class="chip" target="_blank" rel="noopener" href="https://www.youtube.com/audiolibrary">YouTube Audio Library</a>
+      <a class="chip" target="_blank" rel="noopener" href="https://freemusicarchive.org/">Free Music Archive</a>
+      <a class="chip" target="_blank" rel="noopener" href="https://pixabay.com/music/">Pixabay Music</a>
+      <a class="chip" target="_blank" rel="noopener" href="https://create.roblox.com/store/audio">Roblox Creator Store</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DOWNLOADER ============ -->
+<section id="view-downloader" class="view">
+  <h2>DOWNLOADER</h2>
+  <div class="card warn">
+    <b>YouTube &amp; Spotify tidak didukung.</b> Mengunduh dari layanan tersebut melanggar syarat layanan dan hak cipta. Downloader ini hanya mengambil <b>file audio dari link langsung</b> (.mp3 / .wav / .ogg / .flac / .m4a) yang kamu miliki haknya atau bebas royalti.
+  </div>
+  <div class="card">
+    <label class="lbl" for="dlUrl">Link file audio</label>
+    <div class="row">
+      <input id="dlUrl" type="url" placeholder="https://contoh.com/lagu.mp3" autocomplete="off">
+      <button id="dlGo" class="btn primary">Ambil</button>
+    </div>
+    <label class="check"><input id="dlRights" type="checkbox"> Saya memiliki hak / lisensi untuk memakai audio ini.</label>
+    <div id="dlMsg" class="msg"></div>
+    <div id="dlResult" class="file-card" hidden>
+      <div class="file-meta"><b id="dlName">-</b><small id="dlInfo"></small></div>
+      <audio id="dlAudio" controls preload="metadata"></audio>
+      <div class="row wrap">
+        <button id="dlSave" class="btn">Simpan file</button>
+        <button id="dlToMusic" class="btn primary">Kirim ke Music Control</button>
+        <button id="dlToUp" class="btn">Kirim ke Uploader</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Punya file di perangkat?</h3>
+    <p class="muted">Langsung buka <a href="#music">Music Control</a> dan drop filenya di sana.</p>
+  </div>
+</section>
+
+<!-- ============ MUSIC CONTROL ============ -->
+<section id="view-music" class="view">
+  <h2>MUSIC CONTROL</h2>
+  <div id="mcDrop" class="drop" tabindex="0">
+    <input id="mcFile" type="file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.flac,.aac" hidden>
+    <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16"/></svg>
+    <b>Drop file lagu di sini</b>
+    <span>atau klik untuk memilih (MP3, WAV, OGG, M4A, FLAC)</span>
+  </div>
+  <div id="mcMsg" class="msg"></div>
+
+  <div id="mcPanel" hidden>
+    <div class="card">
+      <div class="file-meta"><b id="mcName">-</b><small id="mcInfo"></small></div>
+      <canvas id="mcWave" height="110"></canvas>
+      <div class="trim">
+        <div class="trim-row"><label>Mulai <b id="mcStartT">0:00</b></label><input id="mcStart" type="range" min="0" max="1000" value="0"></div>
+        <div class="trim-row"><label>Selesai <b id="mcEndT">0:00</b></label><input id="mcEnd" type="range" min="0" max="1000" value="1000"></div>
+      </div>
+      <audio id="mcOrig" controls preload="metadata"></audio>
+      <small class="muted">Player di atas = lagu asli. Speed di bawah ikut berlaku untuk pratinjau cepat.</small>
+    </div>
+
+    <div class="card">
+      <h3>Speed</h3>
+      <div class="speed">
+        <input id="mcSpeed" type="range" min="0.25" max="2" step="0.01" value="1">
+        <input id="mcSpeedNum" type="number" min="0.25" max="2" step="0.01" value="1"><span>×</span>
+      </div>
+      <div class="chips" id="mcPresets">
+        <button class="chip" data-s="0.5">0.5×</button><button class="chip" data-s="0.75">0.75×</button><button class="chip" data-s="0.8">0.8×</button>
+        <button class="chip" data-s="0.85">0.85×</button><button class="chip" data-s="0.9">0.9×</button><button class="chip" data-s="1">1×</button>
+        <button class="chip" data-s="1.1">1.1×</button><button class="chip" data-s="1.25">1.25×</button><button class="chip" data-s="1.5">1.5×</button>
+      </div>
+      <label class="check"><input id="mcPreserve" type="checkbox" checked> Pertahankan pitch (suara tidak ikut berubah saat speed diubah)</label>
+      <div class="speed-note" id="mcDur"></div>
+    </div>
+
+    <div class="card">
+      <h3>Pengaturan lain</h3>
+      <div class="ctl"><label>Pitch <b id="mcPitchT">0 st</b></label><input id="mcPitch" type="range" min="-12" max="12" step="1" value="0"></div>
+      <div class="ctl"><label>Volume <b id="mcVolT">100%</b></label><input id="mcVol" type="range" min="0" max="200" step="1" value="100"></div>
+      <div class="ctl"><label>Fade in <b id="mcFiT">0 dtk</b></label><input id="mcFi" type="range" min="0" max="10" step="0.5" value="0"></div>
+      <div class="ctl"><label>Fade out <b id="mcFoT">0 dtk</b></label><input id="mcFo" type="range" min="0" max="10" step="0.5" value="0"></div>
+      <label class="check"><input id="mcNorm" type="checkbox" checked> Normalisasi volume (puncak 95%)</label>
+      <div class="row wrap">
+        <button id="mcQuick" class="btn">▶ Pratinjau cepat (real-time)</button>
+        <button id="mcProcess" class="btn primary">Proses</button>
+        <button id="mcReset" class="btn">Reset</button>
+      </div>
+      <div class="bar" id="mcBar" hidden><i id="mcBarFill"></i><span id="mcBarText"></span></div>
+    </div>
+
+    <div class="card" id="mcOut" hidden>
+      <h3>Hasil</h3>
+      <div class="file-meta"><small id="mcOutInfo"></small></div>
+      <audio id="mcResult" controls preload="metadata"></audio>
+      <div class="row wrap">
+        <select id="mcKbps"><option>320</option><option>192</option><option selected>128</option><option>96</option><option>64</option></select>
+        <button id="mcMp3" class="btn">Unduh MP3</button>
+        <button id="mcWav" class="btn">Unduh WAV</button>
+        <button id="mcToUp" class="btn primary">Kirim ke Uploader</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ UPLOADER ============ -->
+<section id="view-uploader" class="view">
+  <h2>UPLOADER</h2>
+  <div class="card">
+    <h3>1. File audio</h3>
+    <div id="upDrop" class="drop small" tabindex="0">
+      <input id="upFile" type="file" accept="audio/*,.mp3,.wav,.ogg,.flac" hidden>
+      <b>Drop / pilih file</b><span>atau kirim dari Music Control</span>
+    </div>
+    <div id="upFileCard" class="file-card" hidden>
+      <div class="file-meta"><b id="upName">-</b><small id="upInfo"></small></div>
+      <audio id="upAudio" controls preload="metadata"></audio>
+      <div class="row wrap"><button id="upPrep" class="btn">Siapkan otomatis (MP3 ≤ 4 MB)</button></div>
+    </div>
+    <div id="upMsg" class="msg"></div>
+  </div>
+
+  <div class="card">
+    <h3>2. Data Roblox</h3>
+    <label class="lbl" for="upKey">API key Open Cloud <small>(izin: Assets → Read &amp; Write)</small></label>
+    <input id="upKey" type="password" placeholder="API key kamu" autocomplete="off">
+    <label class="check"><input id="upRemember" type="checkbox"> Ingat API key di browser ini</label>
+    <div class="two-col">
+      <div><label class="lbl" for="upType">Pemilik</label>
+        <select id="upType"><option value="User">User</option><option value="Group">Group</option></select></div>
+      <div><label class="lbl" for="upId">User ID / Group ID</label>
+        <input id="upId" type="text" inputmode="numeric" placeholder="123456789"></div>
+    </div>
+    <label class="lbl" for="upTitle">Nama audio <small>(maks 50 karakter)</small></label>
+    <input id="upTitle" type="text" maxlength="50" placeholder="Nama lagu">
+    <label class="lbl" for="upDesc">Deskripsi <small>(opsional)</small></label>
+    <input id="upDesc" type="text" maxlength="200" placeholder="Deskripsi singkat">
+    <label class="check"><input id="upRights" type="checkbox"> Saya memiliki hak / lisensi untuk audio ini dan siap bertanggung jawab atas moderasi Roblox.</label>
+    <div class="row"><button id="upGo" class="btn primary">Upload ke Roblox</button></div>
+  </div>
+
+  <div class="card" id="upResult" hidden>
+    <h3>Hasil</h3>
+    <div id="upStatus" class="msg"></div>
+    <div id="upIdBox" hidden>
+      <div class="idbox"><div><small>Asset ID</small><b id="upAssetId">-</b></div><button class="btn" id="upCopyId">Salin ID</button></div>
+      <div class="idbox"><div><small>URL</small><b id="upAssetUrl">-</b></div><button class="btn" id="upCopyUrl">Salin</button></div>
+    </div>
+    <button id="upCheck" class="btn" hidden>Cek status lagi</button>
+  </div>
+</section>
+
+</main>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<script src="dsp.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
