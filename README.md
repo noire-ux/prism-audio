@@ -7,7 +7,8 @@ Website untuk menyiapkan lagu sebelum dipakai di Roblox:
 | **HOME** | Informasi, alur cepat, tips, sumber musik legal |
 | **DOWNLOADER** | Ambil file audio dari **link langsung** (milik sendiri / bebas royalti). YouTube & Spotify **tidak didukung** |
 | **MUSIC CONTROL** | Drop file → atur **speed**, **pitch**, volume, fade, trim, normalisasi → ekspor MP3/WAV |
-| **UPLOADER** | Upload ke Roblox (Open Cloud) → dapat **Asset ID** (`rbxassetid://...`) |
+| **UPLOADER** | Upload ke Roblox (Open Cloud) → dapat **Asset ID** (`rbxassetid://...`), lalu **otomatis masuk Music System** game |
+| **MUSIC LIBRARY** | Lihat / tambah (satu atau banyak sekaligus) / ubah speed / hapus lagu di Music System game, langsung dari web |
 
 Pemrosesan audio berjalan 100% di browser. Server (Vercel Functions) hanya dipakai untuk Downloader (link langsung) dan meneruskan upload ke Roblox.
 
@@ -15,7 +16,7 @@ Pemrosesan audio berjalan 100% di browser. Server (Vercel Functions) hanya dipak
 
 ```
 public/        index.html, style.css, app.js, dsp.js   (situs statis)
-api/           upload.js, status.js, fetch.js          (Vercel Serverless Functions)
+api/           upload.js, status.js, fetch.js, library.js (Vercel Serverless Functions)
 vercel.json    outputDirectory = public
 package.json
 ```
@@ -45,12 +46,25 @@ vercel --prod
 
 > API key dikirim hanya ke fungsi `/api/upload` milik situsmu lalu diteruskan ke Roblox. Tidak disimpan di server. Centang "Ingat API key" hanya bila perangkatmu pribadi.
 
+## Menyambungkan ke Music System game
+Lagu ditulis ke DataStore yang sama dengan yang dibaca `MusicService` di game (`<Config.DataStoreName>_Music`, default **ClubKit_v1_Music**, key `Library`). Tidak perlu input lagu satu per satu di game.
+
+1. Buat API key (Creator Hub → Credentials) dengan izin:
+   - **Assets**: Read + Write (untuk Uploader)
+   - **DataStore**: *Read Entry*, *Create Entry*, *Update Entry* untuk experience-mu (wajib untuk Music Library)
+   - **Messaging Service**: *Publish* (opsional, agar lagu muncul di game seketika; tanpa ini muncul ±60 detik)
+2. Cari **Universe ID** game (Creator Hub → experience → *Game Settings* / URL dashboard). Itu bukan Place ID.
+3. Di **UPLOADER** centang *Otomatis tambahkan ke Music System*, isi Universe ID, artis, dan biarkan speed **1** (lagu yang sudah kamu perlambat di Music Control sudah pas).
+4. Untuk uji coba di Roblox Studio, aktifkan *Enable Studio Access to API Services*.
+5. Game harus memakai Club Kit V1.1.9.9 atau lebih baru (mendukung Speed per lagu dan sinkron otomatis dari web).
+
 ## Environment Variables (opsional)
 Atur di Vercel → Project → Settings → Environment Variables:
 
 | Nama | Fungsi |
 |---|---|
 | `ROBLOX_API_KEY` | API key bawaan, jadi tidak perlu diketik di Uploader. **Hati-hati**: siapa pun yang membuka situs bisa memakainya, kecuali kamu juga mengisi `ACCESS_CODE` |
+| `UNIVERSE_ID` / `MUSIC_DATASTORE` | Universe ID dan nama DataStore bawaan untuk Music Library |
 | `ACCESS_CODE` | Jika diisi, semua endpoint `/api/*` menolak permintaan tanpa header `x-access-code` yang sama |
 
 ## Batasan
