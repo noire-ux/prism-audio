@@ -24,6 +24,7 @@
     <a href="#downloader" data-view="downloader"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>DOWNLOADER</a>
     <a href="#music" data-view="music"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>MUSIC CONTROL</a>
     <a href="#uploader" data-view="uploader"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16"/></svg>UPLOADER</a>
+    <a href="#library" data-view="library"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>MUSIC LIBRARY</a>
   </nav>
   <div class="side-foot">Semua pemrosesan audio berjalan di browser kamu.</div>
 </aside>
@@ -45,6 +46,7 @@
     <a class="card link" href="#downloader"><h3>DOWNLOADER</h3><p>Ambil file audio dari link langsung (milik sendiri / bebas royalti).</p></a>
     <a class="card link" href="#music"><h3>MUSIC CONTROL</h3><p>Ubah speed, pitch, volume, fade, trim. Ekspor MP3 / WAV.</p></a>
     <a class="card link" href="#uploader"><h3>UPLOADER</h3><p>Upload ke Roblox via Open Cloud → Asset ID siap pakai.</p></a>
+    <a class="card link" href="#library"><h3>MUSIC LIBRARY</h3><p>Tambah lagu ke Music System game langsung dari web (tanpa input 1 per 1 di game).</p></a>
   </div>
 
   <div class="card">
@@ -54,6 +56,7 @@
       <li><b>Atur</b> – kalau lagu terlalu cepat, turunkan <i>Speed</i> (mis. 0.85×) dengan <i>Pertahankan pitch</i> aktif.</li>
       <li><b>Proses &amp; dengarkan</b> – tekan <i>Proses</i>, cek hasilnya di player.</li>
       <li><b>Kirim ke Uploader</b> – file otomatis dijadikan MP3 ≤ 4 MB, lalu upload dan salin Asset ID.</li>
+      <li><b>Masuk Music System</b> – centang <i>Otomatis tambahkan ke Music System</i>; lagu langsung muncul di game (speed tetap 1× normal).</li>
     </ol>
   </div>
 
@@ -217,6 +220,18 @@
     <input id="upTitle" type="text" maxlength="50" placeholder="Nama lagu">
     <label class="lbl" for="upDesc">Deskripsi <small>(opsional)</small></label>
     <input id="upDesc" type="text" maxlength="200" placeholder="Deskripsi singkat">
+    <div class="auto">
+      <label class="check"><input id="upAuto" type="checkbox" checked> <b>Otomatis tambahkan ke Music System</b> setelah upload berhasil</label>
+      <div class="two-col">
+        <div><label class="lbl" for="upUniverse">Universe ID game</label><input id="upUniverse" type="text" inputmode="numeric" placeholder="Universe ID (bukan Place ID)"></div>
+        <div><label class="lbl" for="upArtist">Artis</label><input id="upArtist" type="text" maxlength="40" placeholder="Nama artis"></div>
+      </div>
+      <div class="two-col">
+        <div><label class="lbl" for="upSpeed">Speed di game <small>(1 = normal)</small></label><input id="upSpeed" type="number" min="0.5" max="2" step="0.01" value="1"></div>
+        <div><label class="lbl" for="upDur">Durasi detik <small>(otomatis)</small></label><input id="upDur" type="number" min="1" step="1" placeholder="otomatis"></div>
+      </div>
+      <small class="muted">Lagu yang sudah kamu perlambat di Music Control sudah pas, jadi biarkan speed <b>1</b> (normal) di game.</small>
+    </div>
     <label class="check"><input id="upRights" type="checkbox"> Saya memiliki hak / lisensi untuk audio ini dan siap bertanggung jawab atas moderasi Roblox.</label>
     <div class="row"><button id="upGo" class="btn primary">Upload ke Roblox</button></div>
   </div>
@@ -228,7 +243,54 @@
       <div class="idbox"><div><small>Asset ID</small><b id="upAssetId">-</b></div><button class="btn" id="upCopyId">Salin ID</button></div>
       <div class="idbox"><div><small>URL</small><b id="upAssetUrl">-</b></div><button class="btn" id="upCopyUrl">Salin</button></div>
     </div>
+    <div id="upLibRow" class="row wrap" hidden><button id="upAddLib" class="btn primary">Tambahkan ke Music System</button></div>
+    <div id="upLibMsg" class="msg"></div>
     <button id="upCheck" class="btn" hidden>Cek status lagi</button>
+  </div>
+</section>
+
+<!-- ============ MUSIC LIBRARY ============ -->
+<section id="view-library" class="view">
+  <h2>MUSIC LIBRARY</h2>
+  <div class="card">
+    <h3>Koneksi ke game</h3>
+    <p class="muted">Lagu ditulis langsung ke Music System lewat Roblox Open Cloud (DataStore). API key butuh izin <b>DataStore Read &amp; Write</b> untuk experience-mu (tambah <b>Messaging → Publish</b> agar lagu muncul seketika; tanpa itu muncul dalam ±60 detik).</p>
+    <label class="lbl" for="libKey">API key Open Cloud</label>
+    <input id="libKey" type="password" placeholder="API key kamu" autocomplete="off">
+    <label class="check"><input id="libRemember" type="checkbox"> Ingat API key di browser ini</label>
+    <div class="two-col">
+      <div><label class="lbl" for="libUniverse">Universe ID</label><input id="libUniverse" type="text" inputmode="numeric" placeholder="Universe ID"></div>
+      <div><label class="lbl" for="libDs">Nama DataStore</label><input id="libDs" type="text" value="ClubKit_v1_Music"></div>
+    </div>
+    <div class="row wrap"><button id="libLoad" class="btn primary">Muat library</button></div>
+    <div id="libMsg" class="msg"></div>
+  </div>
+
+  <div class="card">
+    <h3>Tambah lagu</h3>
+    <div class="two-col">
+      <div><label class="lbl" for="libAsset">Audio Asset ID</label><input id="libAsset" type="text" inputmode="numeric" placeholder="123456789"></div>
+      <div><label class="lbl" for="libTitle">Judul</label><input id="libTitle" type="text" maxlength="60" placeholder="Judul lagu"></div>
+    </div>
+    <div class="two-col">
+      <div><label class="lbl" for="libArtist">Artis</label><input id="libArtist" type="text" maxlength="40" placeholder="Nama artis"></div>
+      <div class="two-col" style="margin:0">
+        <div><label class="lbl" for="libDur">Durasi (detik)</label><input id="libDur" type="number" min="1" step="1" placeholder="214"></div>
+        <div><label class="lbl" for="libSpeed">Speed</label><input id="libSpeed" type="number" min="0.5" max="2" step="0.01" value="1"></div>
+      </div>
+    </div>
+    <div class="row"><button id="libAdd" class="btn primary">Tambah ke Music System</button></div>
+
+    <h3 style="margin-top:22px">Tambah banyak sekaligus</h3>
+    <p class="muted">Satu lagu per baris: <code>AssetID | Judul | Artis | Durasi detik | Speed (opsional)</code></p>
+    <textarea id="libBulk" rows="5" placeholder="123456789 | Judul A | Artis A | 214&#10;987654321 | Judul B | Artis B | 187 | 1"></textarea>
+    <div class="row"><button id="libBulkGo" class="btn">Tambah semua</button></div>
+  </div>
+
+  <div class="card">
+    <h3>Isi library <span id="libCount" class="muted"></span></h3>
+    <input id="libSearch" type="text" placeholder="Cari judul / artis / ID…">
+    <div id="libList" class="liblist"></div>
   </div>
 </section>
 

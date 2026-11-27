@@ -40,7 +40,7 @@
 
   /* ---------- sidebar + router ---------- */
   const sidebar = $('#sidebar'), overlay = $('#overlay'), burger = $('#burger');
-  const TITLES = { home: 'HOME', downloader: 'DOWNLOADER', music: 'MUSIC CONTROL', uploader: 'UPLOADER' };
+  const TITLES = { home: 'HOME', downloader: 'DOWNLOADER', music: 'MUSIC CONTROL', uploader: 'UPLOADER', library: 'MUSIC LIBRARY' };
   function setMenu(open) {
     sidebar.classList.toggle('open', open); overlay.classList.toggle('on', open);
     burger.setAttribute('aria-expanded', String(open)); burger.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
@@ -224,6 +224,8 @@
   function setUploadFile(blob, name) {
     up.blob = blob; up.name = name; up.ext = extOf(name, blob.type);
     el('upName').textContent = name; el('upInfo').textContent = fmtSize(blob.size) + ' • ' + (up.ext || blob.type || '?');
+    up.dur = 0; up.assetId = null; up.added = null; el('upDur').value = ''; delete el('upDur').dataset.manual;
+    el('upAudio').onloadedmetadata = () => { const d = el('upAudio').duration; if (isFinite(d) && d > 0) { up.dur = d; if (!el('upDur').dataset.manual) el('upDur').value = Math.ceil(d); } };
     swapUrl(el('upAudio'), blob); el('upFileCard').hidden = false;
     if (!el('upTitle').value) el('upTitle').value = baseName(name).slice(0, 50);
     const ok = UP_EXT.includes(up.ext) && blob.size <= MAX_UP;
@@ -250,11 +252,59 @@
     try {
       if (el('upRemember').checked) localStorage.setItem('nc_key', el('upKey').value.trim()); else localStorage.removeItem('nc_key');
       localStorage.setItem('nc_creator', JSON.stringify({ type: el('upType').value, id: el('upId').value.trim() }));
+      localStorage.setItem('nc_universe', el('libUniverse').value.trim());
+      localStorage.setItem('nc_ds', el('libDs').value.trim());
+      localStorage.setItem('nc_artist', el('upArtist').value.trim());
     } catch (_) {}
   }
+  try {
+    const u = localStorage.getItem('nc_universe'); if (u) { el('libUniverse').value = u; el('upUniverse').value = u; }
+    const d = localStorage.getItem('nc_ds'); if (d) el('libDs').value = d;
+    const ar = localStorage.getItem('nc_artist'); if (ar) el('upArtist').value = ar;
+    if (el('upKey').value) el('libKey').value = el('upKey').value;
+    el('libRemember').checked = el('upRemember').checked;
+  } catch (_) {}
+  // Uploader <-> Library memakai koneksi yang sama
+  [['upKey', 'libKey'], ['upUniverse', 'libUniverse']].forEach(([a, b]) => {
+    el(a).addEventListener('input', () => { el(b).value = el(a).value; });
+    el(b).addEventListener('input', () => { el(a).value = el(b).value; });
+  });
+  el('upRemember').addEventListener('change', () => { el('libRemember').checked = el('upRemember').checked; });
+  el('libRemember').addEventListener('change', () => { el('upRemember').checked = el('libRemember').checked; });
 
   let poll = { op: null, timer: null, tries: 0 };
+  el('upDur').addEventListener('input', () => { el('upDur').dataset.manual = '1'; });
+
+  /* ---------- koneksi Music System (DataStore lewat /api/library) ---------- */
+  function conn() { return { key: el('libKey').value.trim() || el('upKey').value.trim(), universe: el('libUniverse').value.trim() || el('upUniverse').value.trim(), ds: el('libDs').value.trim() || 'ClubKit_v1_Music' }; }
+  async function libCall(body) {
+    const c = conn();
+    if (!c.key) throw new Error('Isi API key Open Cloud.');
+    if (!/^\d+$/.test(c.universe)) throw new Error('Isi Universe ID (angka, bukan Place ID).');
+    persist();
+    const r = await fetch('/api/library', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-roblox-key': c.key }, body: JSON.stringify(Object.assign({ universeId: c.universe, datastore: c.ds }, body)) });
+    let d = {}; try { d = await r.json(); } catch (_) {}
+    if (!r.ok || d.ok === false) throw Object.assign(new Error(d.error || ('HTTP ' + r.status)), { data: d });
+    return d;
+  }
+  async function addAssetToLibrary() {
+    const msg = el('upLibMsg');
+    if (!up.assetId) return;
+    const dur = parseInt(el('upDur').value, 10) || Math.ceil(up.dur || 0);
+    if (!dur) return setMsg(msg, 'Isi durasi (detik) dulu, lalu tekan "Tambahkan ke Music System".', 'err');
+    el('upAddLib').disabled = true; setMsg(msg, 'Menambahkan ke Music System…');
+    try {
+      const d = await libCall({ action: 'add', tracks: [{ asset: up.assetId, title: el('upTitle').value.trim(), artist: el('upArtist').value.trim(), dur, speed: el('upSpeed').value || 1 }] });
+      up.added = up.assetId;
+      setMsg(msg, 'Masuk Music System (' + d.total + ' lagu). Muncul di game dalam ±60 detik (instan jika Messaging aktif).', 'ok');
+      if (lib.loaded) loadLibrary(true);
+    } catch (e) { setMsg(msg, e.message, 'err'); } finally { el('upAddLib').disabled = false; }
+  }
+  el('upAddLib').addEventListener('click', addAssetToLibrary);
+
   function showAsset(id) {
+    up.assetId = id; el('upLibRow').hidden = false; setMsg(el('upLibMsg'), '');
+    if (el('upAuto').checked && up.added !== id) setTimeout(addAssetToLibrary, 50);
     el('upIdBox').hidden = false; el('upAssetId').textContent = id; el('upAssetUrl').textContent = 'rbxassetid://' + id; el('upCheck').hidden = true;
     setMsg(el('upStatus'), 'Berhasil diupload. Audio kamu sudah punya Asset ID.', 'ok');
   }
@@ -283,6 +333,7 @@
     if (!/^\d+$/.test(id)) return setMsg(msg, 'User ID / Group ID harus angka.', 'err');
     if (!title) return setMsg(msg, 'Isi nama audio.', 'err');
     if (!el('upRights').checked) return setMsg(msg, 'Centang pernyataan hak / lisensi dulu.', 'err');
+    if (el('upAuto').checked && !/^\d+$/.test(el('upUniverse').value.trim())) return setMsg(msg, 'Isi Universe ID game, atau matikan "Otomatis tambahkan ke Music System".', 'err');
     persist();
     const btn = el('upGo'); btn.disabled = true; setMsg(msg, 'Mengupload ke Roblox…');
     el('upResult').hidden = false; el('upIdBox').hidden = true; el('upCheck').hidden = true; setMsg(el('upStatus'), 'Mengupload…');
@@ -303,4 +354,71 @@
       else { poll = { op: d.operationId, timer: null, tries: 0 }; setMsg(el('upStatus'), 'Terkirim. Menunggu pemrosesan / moderasi Roblox…'); poll.timer = setTimeout(checkStatus, 3000); el('upCheck').hidden = false; }
     } catch (e) { setMsg(el('upStatus'), e.message, 'err'); setMsg(msg, ''); } finally { btn.disabled = false; }
   });
+
+  /* ---------- MUSIC LIBRARY ---------- */
+  const lib = { tracks: [], loaded: false };
+  const libMsg = el('libMsg');
+  function renderLib() {
+    const q = el('libSearch').value.trim().toLowerCase();
+    const box = el('libList'); box.innerHTML = '';
+    const rows = lib.tracks.filter((t) => !q || (t.title + ' ' + t.artist + ' ' + t.asset).toLowerCase().includes(q));
+    el('libCount').textContent = lib.loaded ? '(' + lib.tracks.length + ' lagu)' : '';
+    if (!rows.length) { box.innerHTML = '<small class="muted">' + (lib.loaded ? 'Tidak ada lagu.' : 'Tekan "Muat library" untuk melihat isi Music System.') + '</small>'; return; }
+    rows.slice().reverse().forEach((t) => {
+      const d = document.createElement('div'); d.className = 'track';
+      const info = document.createElement('div');
+      const b = document.createElement('b'); b.textContent = t.title;
+      if (t.by === 'Web') { const bd = document.createElement('span'); bd.className = 'badge'; bd.textContent = 'WEB'; b.appendChild(bd); }
+      const sm = document.createElement('small'); sm.textContent = t.artist + ' • ID ' + t.asset + ' • ' + fmtT(t.dur) + ' • ' + t.speed + '×';
+      info.append(b, sm);
+      const tools = document.createElement('div'); tools.className = 'tools';
+      const sp = document.createElement('input'); sp.type = 'number'; sp.min = '0.5'; sp.max = '2'; sp.step = '0.01'; sp.value = t.speed; sp.title = 'Speed di game (1 = normal)';
+      const sv = document.createElement('button'); sv.className = 'btn'; sv.textContent = 'Simpan';
+      const del = document.createElement('button'); del.className = 'btn'; del.textContent = 'Hapus';
+      sv.onclick = async () => { sv.disabled = true; try { await libCall({ action: 'update', id: t.id, speed: sp.value }); t.speed = parseFloat(sp.value); toast('Speed disimpan'); renderLib(); } catch (e) { setMsg(libMsg, e.message, 'err'); } finally { sv.disabled = false; } };
+      del.onclick = async () => { if (!confirm('Hapus "' + t.title + '" dari Music System? (masuk Trash di game)')) return; del.disabled = true; try { await libCall({ action: 'remove', id: t.id }); lib.tracks = lib.tracks.filter((x) => x.id !== t.id); toast('Dihapus'); renderLib(); } catch (e) { setMsg(libMsg, e.message, 'err'); del.disabled = false; } };
+      tools.append(sp, sv, del); d.append(info, tools); box.appendChild(d);
+    });
+  }
+  async function loadLibrary(silent) {
+    if (!silent) setMsg(libMsg, 'Membaca library dari game…');
+    try {
+      const d = await libCall({ action: 'list' });
+      lib.tracks = d.tracks || []; lib.loaded = true; renderLib();
+      setMsg(libMsg, 'Terhubung. Versi library ' + d.ver + (d.locked ? ' • TERKUNCI di game (Edit Lock)' : '') + '.', d.locked ? 'err' : 'ok');
+    } catch (e) { setMsg(libMsg, e.message, 'err'); }
+  }
+  el('libLoad').addEventListener('click', () => loadLibrary(false));
+  el('libSearch').addEventListener('input', renderLib);
+
+  el('libAdd').addEventListener('click', async () => {
+    const t = { asset: el('libAsset').value.trim(), title: el('libTitle').value.trim(), artist: el('libArtist').value.trim(), dur: parseInt(el('libDur').value, 10), speed: el('libSpeed').value || 1 };
+    if (!t.asset || !t.title || !t.dur) return setMsg(libMsg, 'Audio ID, judul, dan durasi wajib diisi.', 'err');
+    const btn = el('libAdd'); btn.disabled = true; setMsg(libMsg, 'Menambahkan…');
+    try {
+      const d = await libCall({ action: 'add', tracks: [t] });
+      setMsg(libMsg, 'Ditambahkan (' + d.total + ' lagu). Muncul di game dalam ±60 detik.', 'ok');
+      ['libAsset', 'libTitle', 'libDur'].forEach((id) => { el(id).value = ''; }); await loadLibrary(true);
+    } catch (e) { setMsg(libMsg, e.message, 'err'); } finally { btn.disabled = false; }
+  });
+
+  el('libBulkGo').addEventListener('click', async () => {
+    const lines = el('libBulk').value.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) return setMsg(libMsg, 'Isi daftar lagu dulu.', 'err');
+    const tracks = [], bad = [];
+    lines.forEach((l, i) => {
+      const p = l.split('|').map((x) => x.trim());
+      const dur = parseInt(p[3], 10);
+      if (!p[0] || !p[1] || !dur) bad.push('baris ' + (i + 1)); else tracks.push({ asset: p[0], title: p[1], artist: p[2] || '', dur, speed: p[4] || 1 });
+    });
+    if (bad.length) return setMsg(libMsg, 'Format salah di ' + bad.slice(0, 5).join(', ') + '. Wajib: AssetID | Judul | Artis | Durasi', 'err');
+    const btn = el('libBulkGo'); btn.disabled = true; setMsg(libMsg, 'Menambahkan ' + tracks.length + ' lagu…');
+    try {
+      const d = await libCall({ action: 'add', tracks });
+      const sk = d.skipped && d.skipped.length ? ' • dilewati ' + d.skipped.length + ' (' + d.skipped[0].why + ')' : '';
+      setMsg(libMsg, d.added.length + ' lagu ditambahkan' + sk + '. Total ' + d.total + '.', 'ok');
+      el('libBulk').value = ''; await loadLibrary(true);
+    } catch (e) { setMsg(libMsg, e.message + (e.data && e.data.skipped && e.data.skipped.length ? ' (' + e.data.skipped.length + ' dilewati)' : ''), 'err'); } finally { btn.disabled = false; }
+  });
+  renderLib();
 })();
